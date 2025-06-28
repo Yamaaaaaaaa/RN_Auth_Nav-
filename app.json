@@ -9,13 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSContactsUsageDescription": "This app needs access to your contacts to display them."  // ← mô tả yêu cầu
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "READ_CONTACTS"  // ← cho phép đọc danh bạ
+      ],
       "edgeToEdgeEnabled": true,
       "package": "com.kaita2k4.memkeeper"
     },
@@ -33,6 +39,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        } 
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts." // Nếu muốn tự ta set cái thông điệp của popup xin cấp quyền thì mới config cái này
         }
       ]
     ],

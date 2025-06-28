@@ -1,10 +1,10 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { Dimensions, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase/firebaseConfig';
 import { router } from 'expo-router';
-import { Dimensions } from 'react-native';
 import { LinearGradient } from "expo-linear-gradient";
+import * as Contacts from 'expo-contacts';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -17,12 +17,29 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [contacts, setContacts] = useState<any[]>([]);
 
     const handleLogin = async () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             setLoading(true);
             Alert.alert("Success", "You have loged in successfully!");
+
+
+            // ➕ Gọi lấy danh bạ ở đây
+            const { status } = await Contacts.requestPermissionsAsync(); // Cái này là xin cấp quyền nè
+            if (status === 'granted') {
+                const { data } = await Contacts.getContactsAsync({
+                    fields: [Contacts.Fields.PhoneNumbers],
+                });
+
+                if (data.length > 0) {
+                    setContacts(data);
+                }
+            } else {
+                Alert.alert('Permission Denied', 'Cannot access contacts without permission.');
+            }
+            console.log("Contacts", contacts);
             router.replace('/(tabs)'); // chuyển sang màn hình chính sau khi đăng nhập
         } catch (error: any) {
             Alert.alert('Lỗi đăng nhập', error.message);

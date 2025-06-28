@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { auth } from "@/firebase/firebaseConfig";
 import { onAuthStateChanged } from 'firebase/auth';
 
+
 export default function TabsLayout() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -13,6 +14,9 @@ export default function TabsLayout() {
 
         return unsubscribe;
     }, []);
+
+
+
     return (
         <Tabs>
             <Tabs.Screen name="index" options={{

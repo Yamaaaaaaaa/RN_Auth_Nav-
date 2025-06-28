@@ -1,5 +1,6 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import React, { useEffect } from "react";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -8,7 +9,10 @@ export default function RootLayout() {
     Inika: require('../assets/fonts/Inika-Regular.ttf'),
     Montserrat: require('../assets/fonts/Montserrat-Regular.ttf'),
   });
+
+
   if (!loaded) return null;
+
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{

@@ -15,15 +15,26 @@ export default function TabsLayout() {
         return unsubscribe;
     }, []);
 
-
-
     return (
         <Tabs>
             <Tabs.Screen name="index" options={{
-                headerTitle: "Sticker Smash"
+                headerTitle: "Sticker Smash",
+                headerShown: false,
+                tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
             }} />
             <Tabs.Screen name="about" options={{
-                headerTitle: "About"
+                headerTitle: "About",
+                headerShown: false,
+            }} />
+            <Tabs.Screen name="profile" options={{
+                headerTitle: "Profile",
+                headerShown: false,
+                // tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
+            }} />
+            <Tabs.Screen name="friend_list" options={{
+                headerTitle: "Friend List",
+                headerShown: false,
+                // tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
             }} />
         </Tabs>
     );

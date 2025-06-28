@@ -5,14 +5,9 @@ import { auth } from '@/firebase/firebaseConfig';
 import { router } from 'expo-router';
 import { LinearGradient } from "expo-linear-gradient";
 import * as Contacts from 'expo-contacts';
+import { screenHeight, screenWidth } from '@/utils/initScreen';
 
-const screenHeight = Dimensions.get('window').height;
-const screenWidth = Dimensions.get('window').width;
-console.log('====================================');
-console.log("screenHeight", screenHeight);
-console.log("screenWidth", screenWidth);
-console.log("screenHeight/screenWidth", screenHeight / screenWidth);
-console.log('====================================');
+
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -27,7 +22,7 @@ export default function LoginScreen() {
 
 
             // ➕ Gọi lấy danh bạ ở đây
-            const { status } = await Contacts.requestPermissionsAsync(); // Cái này là xin cấp quyền nè
+            const { status } = await Contacts.requestPermissionsAsync();
             if (status === 'granted') {
                 const { data } = await Contacts.getContactsAsync({
                     fields: [Contacts.Fields.PhoneNumbers],

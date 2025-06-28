@@ -1,41 +1,235 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase/firebaseConfig';
 import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
+import { LinearGradient } from "expo-linear-gradient";
 
+const screenHeight = Dimensions.get('window').height;
+const screenWidth = Dimensions.get('window').width;
+console.log('====================================');
+console.log("screenHeight", screenHeight);
+console.log("screenWidth", screenWidth);
+console.log("screenHeight/screenWidth", screenHeight / screenWidth);
+console.log('====================================');
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState<boolean>(false);
 
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.replace('/(tabs)'); // chuyển sang màn hình chính sau khi đăng nhập
-    } catch (error: any) {
-      Alert.alert('Lỗi đăng nhập', error.message);
-    }
-  };
+    const handleLogin = async () => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            setLoading(true);
+            Alert.alert("Success", "You have loged in successfully!");
+            router.replace('/(tabs)'); // chuyển sang màn hình chính sau khi đăng nhập
+        } catch (error: any) {
+            Alert.alert('Lỗi đăng nhập', error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Đăng nhập</Text>
-      <TextInput placeholder="Email" style={styles.input} value={email} onChangeText={setEmail} />
-      <TextInput placeholder="Mật khẩu" style={styles.input} secureTextEntry value={password} onChangeText={setPassword} />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Đăng nhập</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.replace("/(auth)/register")}>
-        <Text style={{ color: 'blue', marginTop: 10 }}>Chưa có tài khoản? Đăng ký</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <LinearGradient colors={["#FFDBD1", "#CDF2F9"]} style={styles.gradient} />
+            <Image source={require("../../assets/images/NewUI/Background1.png")} style={styles.imageBackground} />
+            <View style={styles.contentWrapper}>
+                <View style={styles.logoWrapper}>
+                    <Image
+                        source={require("../../assets/images/NewUI/NewUI_Logo.png")}
+                        style={styles.logoImage}
+                    />
+                </View>
+
+                <View style={styles.inputWrapper}>
+                    <Text style={styles.titleTxt}>
+                        LOG IN
+                    </Text>
+                    <View style={styles.inputItem}>
+                        <Text style={styles.inputLabel}>
+                            Email
+                        </Text>
+                        <TextInput value={email} onChangeText={setEmail} style={styles.inputEnterText} />
+                    </View>
+                    <View style={styles.inputItem}>
+                        <Text style={styles.inputLabel}>
+                            Password
+                        </Text>
+                        <TextInput
+                            placeholder=""
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            style={styles.inputEnterText}
+                        />
+                    </View>
+                </View>
+
+                <TouchableOpacity
+                    onPress={handleLogin}
+                    disabled={loading}
+                    style={styles.loginBtn}
+                >
+                    <Text style={styles.loginTxt}>
+                        {loading ? "Signing in..." : "LOGIN"}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/(auth)/forgot_password")} style={styles.forgotPassBtn} >
+                    <Text style={styles.forgotPassTxt}>
+                        Forgot Password?
+                    </Text>
+                </TouchableOpacity>
+
+                <View style={styles.line}></View>
+
+                <View style={styles.othersloginView}>
+                    <TouchableOpacity
+                        style={styles.itemOthersLoginBtn}
+                        onPress={() => Alert.alert("Sign up with Facebook")}
+                    >
+                        <Image source={require("../../assets/images/NewUI/fb_icon.png")} style={styles.itemOthersLoginIcon} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.itemOthersLoginBtn}
+                        onPress={() => Alert.alert("Sign up with Google")}
+                    >
+                        <Image source={require("../../assets/images/NewUI/gm_icon.png")} style={styles.itemOthersLoginIcon} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.itemOthersLoginBtn}
+                        onPress={() => Alert.alert("Sign up with Apple Account")}
+                    >
+                        <Image source={require("../../assets/images/NewUI/apple_icon.png")} style={styles.itemOthersLoginIcon} />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.turnRegisterView}>
+                    <Text style={styles.turnRegisterTxt}>
+                        Need an account?
+                    </Text>
+                    <TouchableOpacity onPress={() => router.push("/(auth)/register")} >
+                        <Text style={styles.turnRegisterBtn}>SIGN UP</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, marginTop: 80 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: '#ccc', marginBottom: 12, padding: 10, borderRadius: 5 },
-  button: { backgroundColor: '#007AFF', padding: 12, borderRadius: 5 },
-  buttonText: { color: 'white', textAlign: 'center' },
+    container: {
+        flex: 1,
+        alignItems: "center",
+        flexDirection: "column-reverse",
+        paddingHorizontal: "12%",
+        paddingBottom: 63,
+    },
+    gradient: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    imageBackground: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 1,
+        opacity: 0.9,
+    },
+    contentWrapper: {
+        zIndex: 2,
+        width: "100%",
+    },
+    logoWrapper: {
+        alignItems: "center",
+    },
+    logoImage: {
+    },
+    titleTxt: {
+        marginTop: screenHeight / screenWidth >= 2 ? 24 : 20,
+        color: "#000a11",
+        fontSize: 22,
+        fontWeight: "600",
+        fontFamily: "Alberts",
+        marginBottom: screenHeight / screenWidth >= 2 ? 30 : 8,
+    },
+    inputWrapper: {
+        gap: 12,
+    },
+    inputItem: {
+    },
+    inputLabel: {
+        fontSize: screenHeight / screenWidth >= 2 ? 22 : 18,
+        fontWeight: "500",
+        fontFamily: "Alberts",
+    },
+    inputEnterText: {
+        marginTop: 8,
+        height: 44,
+        width: "100%",
+        backgroundColor: "white",
+        borderRadius: 12,
+    },
+    loginBtn: {
+        marginTop: screenHeight / screenWidth >= 2 ? 53 : 25,
+        paddingHorizontal: 30,
+    },
+    loginTxt: {
+        backgroundColor: "#353a3f",
+        width: "100%",
+        textAlign: "center",
+        borderRadius: 1000,
+        alignItems: "center",
+        paddingVertical: 16,
+
+        color: "#fef4f6",
+        fontSize: 20,
+        fontWeight: "500",
+        fontFamily: "Alberts",
+    },
+    forgotPassBtn: {
+        marginTop: 8,
+        color: "#000a11",
+        fontSize: 15,
+    },
+    forgotPassTxt: {
+        fontFamily: "Alberts",
+        fontSize: screenHeight / screenWidth >= 2 ? 18 : 16,
+        textAlign: "center",
+    },
+    line: {
+        marginTop: screenHeight / screenWidth >= 2 ? 58 : 29,
+        height: 1,
+        backgroundColor: "black",
+        width: "100%",
+    },
+    othersloginView: {
+        marginTop: screenHeight / screenWidth >= 2 ? 30 : 15,
+        flexDirection: "row",
+        gap: "10%",
+        justifyContent: "center",
+    },
+    itemOthersLoginBtn: {
+        width: 32,
+        height: 32,
+    },
+    itemOthersLoginIcon: {
+        resizeMode: "cover",
+    },
+    turnRegisterView: {
+        marginTop: screenHeight / screenWidth >= 2 ? 40 : 20,
+        flexDirection: "row",
+        height: 26,
+        alignItems: "flex-end",
+        justifyContent: "center",
+    },
+    turnRegisterBtn: {
+        fontFamily: "Alberts",
+        fontWeight: "bold",
+        fontSize: screenHeight / screenWidth >= 2 ? 22 : 16,
+    },
+    turnRegisterTxt: {
+        fontFamily: "Alberts",
+        marginRight: 8,
+        fontSize: screenHeight / screenWidth >= 2 ? 22 : 16,
+    }
 });

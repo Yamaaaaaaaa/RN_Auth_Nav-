@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     },
     logoutBtn: {
         marginTop: screenRatio >= 2 ? 36 : 20,
-        marginBottom: screenRatio >= 2 ? 39 : 15,
+        marginBottom: screenRatio >= 2 ? 115 : 80,
 
         backgroundColor: '#353A3F',
         paddingVertical: screenRatio >= 2 ? 16 : 14,

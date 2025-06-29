@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 export default function RootLayout() {
   const [loaded] = useFonts({
     Alberts: require('../assets/fonts/AlbertSans-Regular.ttf'),
-    JudSon: require('../assets/fonts/Judson-Regular.ttf'),
+    Judson: require('../assets/fonts/Judson-Regular.ttf'),
     Inika: require('../assets/fonts/Inika-Regular.ttf'),
     Montserrat: require('../assets/fonts/Montserrat-Regular.ttf'),
   });

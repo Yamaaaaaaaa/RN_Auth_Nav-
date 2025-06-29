@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { router } from 'expo-router';
+import { screenRatio } from '@/utils/initScreen';
 
-
-// ✅ Interface cho dữ liệu bạn bè
 interface Friend {
     uid: string;
     name: string;
     profilePicture: string;
 }
+
 
 export default function FriendListScreen() {
     const [friends, setFriends] = useState<Friend[]>([]);
@@ -59,12 +59,16 @@ export default function FriendListScreen() {
             <View style={styles.contentWrapper}>
                 <Text style={styles.title}>My family and friends</Text>
 
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search..."
-                    value={searchText}
-                    onChangeText={setSearchText}
-                />
+                <View style={styles.inputSearchView}>
+                    <Image source={require("../../assets/images/NewUI/search-normal.png")} style={styles.inputSearchImg}></Image>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search..."
+                        value={searchText}
+                        onChangeText={setSearchText}
+                    />
+                </View>
+
 
                 <FlatList
                     data={filteredFriends}
@@ -78,11 +82,10 @@ export default function FriendListScreen() {
                         </View>
                     )}
                 />
-
-                <TouchableOpacity style={styles.addButton} onPress={() => router.push("/(tabs)/invite_contact")}>
-                    <Text style={styles.addIcon}>👥+</Text>
-                </TouchableOpacity>
             </View>
+            <TouchableOpacity style={styles.addButton} onPress={() => router.push("/(tabs)/invite_contact")}>
+                <Image source={require("../../assets/images/NewUI/profile-add.png")}></Image>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -91,8 +94,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: "center",
-        flexDirection: "column-reverse",
-        paddingHorizontal: 24,
+        flexDirection: "column",
     },
     gradient: {
         ...StyleSheet.absoluteFillObject,
@@ -102,52 +104,57 @@ const styles = StyleSheet.create({
         zIndex: 2,
         width: "100%",
         alignItems: 'center',
-        paddingTop: 60,
-        paddingBottom: 40,
+        paddingTop: 65,
+        paddingHorizontal: 25,
     },
     title: {
-        fontSize: 22,
-        fontWeight: '600',
-        marginBottom: 20,
+        fontSize: 28,
+        fontFamily: "Alberts",
+        marginBottom: 30,
+    },
+    inputSearchImg: {
+        marginRight: 8,
+    },
+    inputSearchView: {
+        backgroundColor: "#FEF4F6",
+        flexDirection: "row",
+        borderRadius: 12,
+        alignItems: "center",
+        width: "100%",
+        paddingHorizontal: 20,
+        marginBottom: 30,
     },
     searchInput: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        width: '90%',
-        marginBottom: 20,
-        fontSize: 16,
+        fontSize: 18,
+        fontFamily: "Alberts",
     },
     grid: {
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 20,
+        gap: 18,
     },
     friendItem: {
         alignItems: 'center',
-        marginHorizontal: 12,
-        marginBottom: 20,
+        marginRight: 18,
     },
     avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        marginBottom: 6,
+        width: screenRatio >= 2 ? 108 : 90,
+        height: screenRatio >= 2 ? 108 : 90,
+        borderRadius: 1000,
     },
     name: {
-        fontSize: 14,
-        fontWeight: '500',
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
     },
     addButton: {
-        backgroundColor: '#333',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        backgroundColor: '#353A3F',
+        width: 80,
+        height: 80,
+        borderRadius: 1000,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        bottom: 30,
+        bottom: 60,
         right: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },

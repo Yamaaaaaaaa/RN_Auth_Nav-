@@ -29,12 +29,17 @@ export default function TabsLayout() {
             <Tabs.Screen name="profile" options={{
                 headerTitle: "Profile",
                 headerShown: false,
-                // tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
+                tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
             }} />
             <Tabs.Screen name="friend_list" options={{
                 headerTitle: "Friend List",
                 headerShown: false,
-                // tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
+                tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
+            }} />
+            <Tabs.Screen name="invite_contact" options={{
+                headerTitle: "Invite Contacts",
+                headerShown: false,
+                tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
             }} />
         </Tabs>
     );

@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Button, StyleSheet, TouchableOpacity, Text, Alert, Image, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as ImagePicker from 'expo-image-picker';
 import { screenRatio } from '@/utils/initScreen';
 import { signOut } from 'firebase/auth';
 import { auth, db, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes, uploadString } from 'firebase/storage';
-// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import * as FileSystem from 'expo-file-system';
-
+import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
@@ -17,6 +14,7 @@ export default function ProfileScreen() {
     const [email, setEmail] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -39,73 +37,187 @@ export default function ProfileScreen() {
         loadUserData();
     }, []);
 
-
-    // Upload ảnh
+    // Alternative upload method using uploadBytesResumable
     const uploadImageToStorage = async (uri: string): Promise<string> => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const uid = auth.currentUser?.uid;
+                if (!uid) {
+                    reject(new Error("Người dùng chưa đăng nhập"));
+                    return;
+                }
+
+                console.log("=== STARTING UPLOAD ===");
+                console.log("User ID:", uid);
+                console.log("Image URI:", uri);
+
+                // Convert image to blob
+                const response = await fetch(uri);
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                console.log("Blob created:", {
+                    size: blob.size,
+                    type: blob.type
+                });
+
+                // Create storage reference with simpler path
+                const fileName = `${uid}_${Date.now()}.jpg`;
+                const imageRef = ref(storage, fileName); // Simplified path - just filename
+
+                console.log("Storage reference:", imageRef.fullPath);
+
+                // Use uploadBytesResumable for better error handling
+                const uploadTask = uploadBytesResumable(imageRef, blob);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload progress:', progress + '%');
+                    },
+                    (error) => {
+                        console.error("Upload failed:", error);
+                        reject(error);
+                    },
+                    async () => {
+                        try {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            console.log("Upload completed, URL:", downloadURL);
+                            resolve(downloadURL);
+                        } catch (urlError) {
+                            console.error("Error getting download URL:", urlError);
+                            reject(urlError);
+                        }
+                    }
+                );
+
+            } catch (error) {
+                console.error("Upload setup error:", error);
+                reject(error);
+            }
+        });
+    };
+
+    // Fallback upload method
+    const uploadImageFallback = async (uri: string): Promise<string> => {
         try {
             const uid = auth.currentUser?.uid;
-            if (!uid) throw new Error("Người dùng chưa đăng nhập");
+            if (!uid) throw new Error("Không có user ID");
 
-            // Đọc file ảnh dưới dạng base64
-            const base64 = await FileSystem.readAsStringAsync(uri, {
-                encoding: FileSystem.EncodingType.Base64,
-            });
+            // Convert to base64 and upload as string
+            const response = await fetch(uri);
+            const blob = await response.blob();
 
-            const imageRef = ref(storage, `avatars/${uid}.jpg`);
+            // Simple upload without folder structure
+            const fileName = `avatar_${uid}.jpg`;
+            const imageRef = ref(storage, fileName);
 
-            // Upload chuỗi base64
-            await uploadString(imageRef, base64, 'base64');
+            const uploadResult = await uploadBytes(imageRef, blob);
+            const downloadURL = await getDownloadURL(uploadResult.ref);
 
-            // Lấy URL ảnh
-            const downloadURL = await getDownloadURL(imageRef);
             return downloadURL;
         } catch (error) {
-            console.error("🔥 Lỗi khi upload ảnh:", error);
+            console.error("Fallback upload failed:", error);
             throw error;
         }
     };
 
-    // Mở thư viện và upload
     const pickImage = async () => {
-        // const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        // if (!permission.granted) return;
+        try {
+            // Check authentication
+            if (!auth.currentUser) {
+                Alert.alert("Lỗi", "Bạn cần đăng nhập để upload ảnh");
+                return;
+            }
 
-        // const result = await ImagePicker.launchImageLibraryAsync({
-        //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        //     allowsEditing: true,
-        //     aspect: [1, 1],
-        //     quality: 0.7,
-        // });
+            // Request permission
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
+                Alert.alert("Cần quyền truy cập", "Vui lòng cấp quyền truy cập thư viện ảnh.");
+                return;
+            }
 
-        // if (!result.canceled && result.assets.length > 0) {
-        //     const uri = result.assets[0].uri;
-        //     const downloadUrl = await uploadImageToStorage(uri);
-        //     setImageUri(downloadUrl);
-        // }
+            // Launch image picker
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.3, // Very low quality for testing
+            });
+
+            if (!result.canceled && result.assets.length > 0) {
+                const uri = result.assets[0].uri;
+                setUploading(true);
+
+                try {
+                    let downloadUrl: string;
+
+                    try {
+                        // Try main upload method first
+                        downloadUrl = await uploadImageToStorage(uri);
+                    } catch (mainError) {
+                        console.log("Main upload failed, trying fallback...");
+                        // Try fallback method
+                        downloadUrl = await uploadImageFallback(uri);
+                    }
+
+                    setImageUri(downloadUrl);
+
+                    // Update Firestore
+                    const uid = auth.currentUser?.uid;
+                    if (uid) {
+                        const userRef = doc(db, "users", uid);
+                        await setDoc(userRef, {
+                            profilePicture: downloadUrl,
+                        }, { merge: true });
+                    }
+
+                    Alert.alert("Thành công", "Ảnh đại diện đã được cập nhật!");
+
+                } catch (error: any) {
+                    console.error("All upload methods failed:", error);
+                    Alert.alert(
+                        "Lỗi Upload",
+                        "Không thể upload ảnh. Vui lòng:\n1. Kiểm tra kết nối mạng\n2. Thử lại sau\n3. Chọn ảnh khác"
+                    );
+                }
+
+                setUploading(false);
+            }
+        } catch (error: any) {
+            console.error("Pick image error:", error);
+            Alert.alert("Lỗi", "Có lỗi xảy ra khi chọn ảnh.");
+            setUploading(false);
+        }
     };
-
 
     const handleSave = async () => {
         try {
             const uid = auth.currentUser?.uid;
-
             if (!uid) {
-                alert("Không tìm thấy người dùng");
+                Alert.alert("Lỗi", "Không tìm thấy người dùng");
+                return;
+            }
+
+            if (newPassword && newPassword !== confirmPassword) {
+                Alert.alert("Lỗi", "Mật khẩu xác nhận không khớp");
                 return;
             }
 
             const userRef = doc(db, "users", uid);
-
-            await setDoc(userRef, {
+            const updateData: any = {
                 username: name,
                 email,
-                profilePicture: imageUri ?? null, // nếu người dùng đã chọn ảnh
-            }, { merge: true }); // không xóa các field cũ nếu có
+                profilePicture: imageUri ?? null,
+            };
 
-            alert("Thông tin đã được cập nhật!");
+            await setDoc(userRef, updateData, { merge: true });
+            Alert.alert("Thành công", "Thông tin đã được cập nhật!");
         } catch (error) {
             console.error("Lỗi khi lưu thông tin:", error);
-            alert("Có lỗi xảy ra khi lưu thông tin.");
+            Alert.alert("Lỗi", "Có lỗi xảy ra khi lưu thông tin.");
         }
     };
 
@@ -119,23 +231,28 @@ export default function ProfileScreen() {
                             source={imageUri ? { uri: imageUri } : require('../../assets/images/NewUI/NewUI_Logo.png')}
                             style={styles.avatar}
                         />
-                        <TouchableOpacity style={styles.editBtn} onPress={pickImage}>
-                            <Text style={styles.editText}>Edit</Text>
-                            <Image source={require('../../assets/images/NewUI/pen.png')} style={styles.editIcon} />
+                        <TouchableOpacity
+                            style={[styles.editBtn, uploading && styles.editBtnDisabled]}
+                            onPress={pickImage}
+                            disabled={uploading}
+                        >
+                            <Text style={styles.editText}>
+                                {uploading ? "Uploading..." : "Edit"}
+                            </Text>
+                            {!uploading && (
+                                <Image source={require('../../assets/images/NewUI/pen.png')} style={styles.editIcon} />
+                            )}
                         </TouchableOpacity>
                     </View>
                 </View>
+
                 <View style={styles.inputWrapper}>
                     <View style={styles.inputItem}>
-                        <Text style={styles.inputLabel}>
-                            Name
-                        </Text>
+                        <Text style={styles.inputLabel}>Name</Text>
                         <TextInput value={name} onChangeText={setName} style={styles.inputEnterText} />
                     </View>
                     <View style={styles.inputItem}>
-                        <Text style={styles.inputLabel}>
-                            Email
-                        </Text>
+                        <Text style={styles.inputLabel}>Email</Text>
                         <TextInput
                             placeholder=""
                             editable={false}
@@ -145,24 +262,22 @@ export default function ProfileScreen() {
                         />
                     </View>
                     <View style={styles.inputItem}>
-                        <Text style={styles.inputLabel}>
-                            New password
-                        </Text>
+                        <Text style={styles.inputLabel}>New password</Text>
                         <TextInput
                             placeholder=""
                             value={newPassword}
                             onChangeText={setNewPassword}
+                            secureTextEntry={true}
                             style={styles.inputEnterText}
                         />
                     </View>
                     <View style={styles.inputItem}>
-                        <Text style={styles.inputLabel}>
-                            Confirm new password
-                        </Text>
+                        <Text style={styles.inputLabel}>Confirm new password</Text>
                         <TextInput
                             placeholder=""
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
+                            secureTextEntry={true}
                             style={styles.inputEnterText}
                         />
                     </View>
@@ -171,7 +286,6 @@ export default function ProfileScreen() {
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                     <Text style={styles.saveBtnText}>Save changes</Text>
                 </TouchableOpacity>
-
 
                 <TouchableOpacity style={styles.logoutBtn} onPress={() => signOut(auth)}>
                     <Text style={styles.logoutBtnText}>LOG OUT</Text>
@@ -212,6 +326,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center"
     },
+    editBtnDisabled: {
+        opacity: 0.6,
+    },
     editIcon: {
         width: 20,
         height: 20,
@@ -238,6 +355,7 @@ const styles = StyleSheet.create({
         width: "100%",
         backgroundColor: "white",
         borderRadius: 12,
+        paddingHorizontal: 12,
     },
     saveBtn: {
         alignSelf: "flex-end",
@@ -254,7 +372,6 @@ const styles = StyleSheet.create({
     logoutBtn: {
         marginTop: screenRatio >= 2 ? 36 : 20,
         marginBottom: screenRatio >= 2 ? 115 : 80,
-
         backgroundColor: '#353A3F',
         paddingVertical: screenRatio >= 2 ? 16 : 14,
         borderRadius: 1000,

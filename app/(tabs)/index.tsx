@@ -1,21 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { screenRatio } from '@/utils/initScreen';
 import { router } from 'expo-router';
+import { auth, db } from '@/firebase/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function HomeScreen() {
+    const [userName, setUserName] = useState('');
 
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            try {
+                const uid = auth.currentUser?.uid;
+                if (!uid) {
+                    console.log('No authenticated user');
+                    return;
+                }
+
+                const userDocRef = doc(db, 'users', uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setUserName(userData.username || 'Unknown User');
+                } else {
+                    console.log('User document not found');
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        };
+        loadUserInfo();
+    }, [])
     return (
         <View style={styles.container}>
             <LinearGradient colors={["#FFDCD1", "#ECEBD0"]} style={styles.gradient} />
             <View style={styles.contentWrapper}>
                 <View style={styles.headerView}>
-                    <Text style={styles.headerTxt}>Welcome Hanjun</Text>
+                    <Text style={styles.headerTxt} numberOfLines={1} >Welcome {userName}</Text>
                     <Image source={require("../../assets/images/NewUI/Waving Hand.png")}></Image>
                 </View>
                 <View style={styles.navWrapper}>
-                    <TouchableOpacity style={styles.navItem}>
+                    <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(tabs)/my_stories")}>
                         <Text style={styles.navIxt}>
                             My stories
                         </Text>
@@ -60,6 +87,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     headerTxt: {
+        maxWidth: "90%",
         fontSize: screenRatio >= 2 ? 36 : 30,
         fontWeight: "600",
         fontFamily: "Alberts",

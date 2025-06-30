@@ -26,6 +26,11 @@ export default function TabsLayout() {
                 headerTitle: "About",
                 headerShown: false,
             }} />
+            <Tabs.Screen name="my_stories" options={{
+                headerTitle: "My Stories",
+                headerShown: false,
+                tabBarStyle: { display: 'none' }, // Ẩn toàn bộ tab bar khi ở tab này
+            }} />
             <Tabs.Screen name="profile" options={{
                 headerTitle: "Profile",
                 headerShown: false,

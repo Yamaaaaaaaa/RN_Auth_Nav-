@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { screenRatio } from '@/utils/initScreen';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { router } from 'expo-router';
 
 interface Story {
     id: string;
@@ -145,7 +146,7 @@ export default function MyStoriesScreen() {
 
     // Handle new story press
     const handleNewStory = () => {
-        console.log('Create new story');
+        router.push("/story/new_story/step1_intro")
         // Navigate to create new story
     };
 

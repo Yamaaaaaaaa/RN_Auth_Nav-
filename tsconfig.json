@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "firebase/firebaseConfig.js"  ]
+, "firebase/firebaseConfig.js", "app/story/new_story"  ]
 }

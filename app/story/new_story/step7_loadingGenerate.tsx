@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { View, StyleSheet, Text, Animated } from "react-native"
+import { View, StyleSheet, Text, Animated, Image } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 
 export default function Step7_Loading() {
@@ -39,8 +39,6 @@ export default function Step7_Loading() {
             <LinearGradient colors={["#FFDCD1", "#ECEBD0"]} style={styles.gradient} />
             <View style={styles.contentWrapper}>
                 <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Generating your story...</Text>
-
                     <View style={styles.progressContainer}>
                         <View style={styles.progressBar}>
                             <Animated.View
@@ -64,7 +62,7 @@ export default function Step7_Loading() {
                                 },
                             ]}
                         >
-                            <Text style={styles.penIcon}>✏️</Text>
+                            <Image source={require("../../../assets/images/NewUI/Icon.png")} style={styles.penIcon} />
                         </Animated.View>
                     </View>
 
@@ -114,7 +112,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#E0E0E0",
         borderRadius: 4,
         position: "absolute",
-        top: 26,
+        top: 66,
     },
     progressFill: {
         height: "100%",
@@ -127,7 +125,8 @@ const styles = StyleSheet.create({
         transform: [{ translateX: -15 }],
     },
     penIcon: {
-        fontSize: 30,
+        width: 71,
+        height: 64,
     },
     progressText: {
         fontSize: 18,

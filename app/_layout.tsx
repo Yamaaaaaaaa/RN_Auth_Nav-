@@ -23,6 +23,10 @@ export default function RootLayout() {
         headerShown: false,
         headerLeft: () => <></>
       }} />
+      <Stack.Screen name="story" options={{
+        headerShown: false,
+        headerLeft: () => <></>
+      }} />
       <Stack.Screen name="+not-found" options={{}} />
     </Stack>
   );

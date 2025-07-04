@@ -1,11 +1,12 @@
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native"
+import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { router } from "expo-router"
+import { screenRatio } from "@/utils/initScreen"
 
 export default function Step6_Generate() {
     return (
         <View style={styles.container}>
-            <LinearGradient colors={["#4A4A4A", "#2A2A2A"]} style={styles.gradient} />
+            <LinearGradient colors={["#353A3F", "#353A3F"]} style={styles.gradient} />
             <View style={styles.contentWrapper}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
                     <Text style={styles.closeText}>✕</Text>
@@ -13,7 +14,8 @@ export default function Step6_Generate() {
 
                 <View style={styles.iconContainer}>
                     <View style={styles.glowCircle}>
-                        <Text style={styles.iconText}>📖✏️</Text>
+                        <Image source={require("../../../assets/images/NewUI/Group 70.png")} style={styles.headerIcon} />
+
                     </View>
                 </View>
 
@@ -21,11 +23,6 @@ export default function Step6_Generate() {
                     <Text style={styles.mainText}>
                         Generate a story from our conversation or save your in-progress story for another day.
                     </Text>
-                    <View style={styles.logoContainer}>
-                        <View style={styles.logo}>
-                            <Text style={styles.logoText}>M</Text>
-                        </View>
-                    </View>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -37,8 +34,8 @@ export default function Step6_Generate() {
                         <Text style={styles.actionButtonText}>Save story</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.generateButton} onPress={() => router.push("/story/new_story/step7_loadingGenerate")}>
-                        <Text style={styles.generateButtonText}>Generate story</Text>
+                    <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/story/new_story/step7_loadingGenerate")}>
+                        <Text style={styles.actionButtonText}>Generate story</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -58,33 +55,26 @@ const styles = StyleSheet.create({
     contentWrapper: {
         zIndex: 2,
         width: "100%",
-        flex: 1,
         paddingHorizontal: 30,
-        paddingTop: 60,
+        paddingTop: screenRatio >= 2 ? 60 : 30,
     },
     closeButton: {
         alignSelf: "flex-end",
-        padding: 10,
-        marginBottom: 20,
+        marginBottom: screenRatio >= 2 ? 60 : 30,
     },
     closeText: {
-        fontSize: 20,
+        fontSize: screenRatio >= 2 ? 35 : 30,
         color: "#999",
     },
     iconContainer: {
         alignItems: "center",
-        marginBottom: 40,
+        marginBottom: screenRatio >= 2 ? 40 : 20,
     },
     glowCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        paddingVertical: screenRatio >= 2 ? 58 : 40,
+        paddingHorizontal: screenRatio >= 2 ? 50 : 30,
+        borderRadius: 1000,
         backgroundColor: "#FFD700",
-        shadowColor: "#FFD700",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 25,
-        elevation: 20,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -92,48 +82,32 @@ const styles = StyleSheet.create({
         fontSize: 35,
     },
     textContainer: {
-        flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        marginBottom: 60,
     },
     mainText: {
         color: "white",
-        fontSize: 16,
-        lineHeight: 24,
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
         textAlign: "center",
-        marginBottom: 20,
         paddingHorizontal: 20,
-    },
-    logoContainer: {
-        marginBottom: 40,
-    },
-    logo: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: "#007AFF",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    logoText: {
-        color: "white",
-        fontSize: 20,
-        fontWeight: "bold",
     },
     buttonContainer: {
         paddingBottom: 50,
     },
     actionButton: {
-        backgroundColor: "white",
-        paddingVertical: 15,
-        borderRadius: 25,
+        backgroundColor: "#EAF2F8",
+        paddingVertical: 20,
+        paddingHorizontal: 40,
+        borderRadius: 1000,
         alignItems: "center",
         marginBottom: 15,
     },
     actionButtonText: {
         color: "#333",
-        fontSize: 16,
-        fontWeight: "500",
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
     },
     generateButton: {
         backgroundColor: "#E5E5E5",

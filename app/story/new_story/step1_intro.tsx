@@ -1,37 +1,42 @@
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native"
+import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { router } from "expo-router"
+import { screenRatio } from "@/utils/initScreen";
 
 export default function Step1_IntroScreen() {
     return (
         <View style={styles.container}>
-            <LinearGradient colors={["#4A4A4A", "#2A2A2A"]} style={styles.gradient} />
+            <LinearGradient colors={["#353A3F", "#353A3F"]} style={styles.gradient} />
             <View style={styles.contentWrapper}>
                 <View style={styles.iconContainer}>
-                    <View style={styles.glowCircle}>
+                    <LinearGradient colors={["#FFCC00", "#353A3F"]} style={styles.glowCircle}>
                         <View style={styles.iconWrapper}>
-                            <Text style={styles.iconText}>✏️📄</Text>
+                            <Image source={require("../../../assets/images/NewUI/Group 68.png")} style={styles.iconImage} />
                         </View>
-                    </View>
+                    </LinearGradient>
                 </View>
 
                 <View style={styles.textContainer}>
                     <Text style={styles.mainText}>
-                        Take a moment to reflect on that period of your life, and the experience that created your memory and formed
-                        your story.
+                        Take a moment to reflect on that period of your life, and the experience that created your memory and formed your story.
                     </Text>
-
-                    <Text style={styles.subText}>Channel your reflections into the next 5 questions</Text>
+                    <Text style={styles.subText}>
+                        Channel your reflections into the next 5 questions
+                    </Text>
                 </View>
 
                 <TouchableOpacity style={styles.continueButton} onPress={() => router.push("/story/new_story/step2_initQuestion")}>
                     <Text style={styles.buttonText}>Continue</Text>
-                    <Text style={styles.arrow}>›</Text>
+                    <Image source={require("../../../assets/images/NewUI/Chev_right.png")} style={styles.arrow} />
                 </TouchableOpacity>
             </View>
         </View>
     )
 }
+
+Step1_IntroScreen.options = {
+    headerShown: false,
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -46,25 +51,21 @@ const styles = StyleSheet.create({
         zIndex: 2,
         width: "100%",
         flex: 1,
-        paddingHorizontal: 30,
-        justifyContent: "space-between",
-        paddingTop: 100,
-        paddingBottom: 50,
+        paddingHorizontal: 56,
+        paddingTop: screenRatio >= 2 ? 172 : 130,
+        paddingBottom: screenRatio >= 2 ? 153 : 110,
     },
     iconContainer: {
         alignItems: "center",
-        marginBottom: 50,
+    },
+    iconImage: {
+        width: screenRatio >= 2 ? 70 : 50,
+        height: screenRatio >= 2 ? 70 : 50,
     },
     glowCircle: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: "#FFD700",
-        shadowColor: "#FFD700",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 30,
-        elevation: 20,
+        width: screenRatio >= 2 ? 185 : 150,
+        height: screenRatio >= 2 ? 185 : 150,
+        borderRadius: 10000,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -81,23 +82,23 @@ const styles = StyleSheet.create({
     },
     mainText: {
         color: "white",
-        fontSize: 18,
-        lineHeight: 26,
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
         textAlign: "left",
-        marginBottom: 30,
         fontWeight: "400",
+        marginBottom: 46,
     },
     subText: {
         color: "white",
-        fontSize: 16,
-        lineHeight: 24,
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
         textAlign: "left",
-        opacity: 0.9,
+        opacity: 0.7,
     },
     continueButton: {
-        backgroundColor: "#4A4A4A",
-        paddingVertical: 15,
-        paddingHorizontal: 30,
+        backgroundColor: "#303336",
+        paddingVertical: 16,
+        paddingHorizontal: screenRatio >= 2 ? 80 : 50,
         borderRadius: 25,
         flexDirection: "row",
         alignItems: "center",
@@ -106,13 +107,11 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: "white",
-        fontSize: 16,
-        fontWeight: "500",
-        marginRight: 8,
+        fontSize: screenRatio >= 2 ? 22 : 18,
+        fontFamily: "Alberts",
+        marginRight: 10,
     },
     arrow: {
-        color: "white",
-        fontSize: 18,
-        fontWeight: "bold",
     },
 })
+

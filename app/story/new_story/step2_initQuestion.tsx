@@ -1,91 +1,126 @@
 "use client"
 
 import { useState } from "react"
-import { View, StyleSheet, Text, TouchableOpacity, TextInput } from "react-native"
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, Image } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { router } from "expo-router"
+import { screenRatio } from "@/utils/initScreen"
 
 const questions = [
     "What is this story about?",
     "Who are the key people in this story?",
     "When did this story take place?",
     "Describe the key moments of this story?",
-    "How did this experience change you?",
 ]
 
 export default function Step2_Questions() {
-    const [currentQuestion, setCurrentQuestion] = useState(0)
     const [answers, setAnswers] = useState<string[]>(new Array(questions.length).fill(""))
-    const [currentAnswer, setCurrentAnswer] = useState("")
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
-    const handleNext = () => {
+    const handleAnswerChange = (text: string, index: number) => {
         const newAnswers = [...answers]
-        newAnswers[currentQuestion] = currentAnswer
+        newAnswers[index] = text
         setAnswers(newAnswers)
+    }
 
-        if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1)
-            setCurrentAnswer(answers[currentQuestion + 1])
-        } else {
-            router.push("/story/new_story/step3_startStory")
+    const handleNext = (index: number) => {
+        if (answers[index].trim()) {
+            if (index < questions.length - 1) {
+                setCurrentQuestionIndex(index + 1)
+            } else {
+                // All questions answered, navigate to next step
+                router.push("/story/new_story/step3_startStory")
+            }
         }
+    }
+
+    const handleErase = (index: number) => {
+        const newAnswers = [...answers]
+        newAnswers[index] = ""
+        setAnswers(newAnswers)
     }
 
     const handleBack = () => {
-        if (currentQuestion > 0) {
-            const newAnswers = [...answers]
-            newAnswers[currentQuestion] = currentAnswer
-            setAnswers(newAnswers)
-            setCurrentQuestion(currentQuestion - 1)
-            setCurrentAnswer(answers[currentQuestion - 1])
-        } else {
-            router.back()
-        }
+        router.back()
     }
+
+    // Show questions up to current question index + 1
+    const questionsToShow = currentQuestionIndex + 1
 
     return (
         <View style={styles.container}>
             <LinearGradient colors={["#FFDCD1", "#ECEBD0"]} style={styles.gradient} />
-            <View style={styles.contentWrapper}>
+            <View style={styles.containerWrapper}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                        <Text style={styles.backText}>‹</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.progressText}>{currentQuestion + 1}/5</Text>
+                    <TextInput style={styles.title}>Learn or depart</TextInput>
+                    <Image source={require("../../../assets/images/NewUI/pen.png")} style={styles.headerIcon} />
                 </View>
 
-                <View style={styles.questionContainer}>
-                    <Text style={styles.questionText}>{questions[currentQuestion]}</Text>
-                </View>
+                <ScrollView style={styles.conversationContainer} showsVerticalScrollIndicator={false}>
+                    {Array.from({ length: questionsToShow }).map((_, index) => (
+                        <View key={index} style={styles.questionAnswerPair}>
+                            {/* Question Bubble */}
+                            <View style={styles.questionBubble}>
+                                <Text style={styles.questionText}>{questions[index]}</Text>
+                            </View>
 
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.textInput}
-                        value={currentAnswer}
-                        onChangeText={setCurrentAnswer}
-                        placeholder="Type your answer here..."
-                        multiline
-                        textAlignVertical="top"
-                    />
-                </View>
+                            {/* Answer Input Bubble */}
+                            <View style={styles.answerBubbleContainer}>
+                                <View style={styles.answerBubble}>
+                                    <TextInput
+                                        style={styles.answerInput}
+                                        value={answers[index]}
+                                        onChangeText={(text) => handleAnswerChange(text, index)}
+                                        placeholder="Type your answer here..."
+                                        multiline
+                                        textAlignVertical="top"
+                                        autoFocus={index === currentQuestionIndex}
+                                    />
+                                </View>
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Text style={styles.actionButtonText}>Type ✏️</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Text style={styles.actionButtonText}>Speak 🎤</Text>
-                    </TouchableOpacity>
-                </View>
+                                {/* Action Buttons directly below answer bubble */}
+                                <View style={styles.actionSection}>
+                                    <View style={styles.actionButtonsRow}>
+                                        <TouchableOpacity style={styles.typeButton}>
+                                            <Text style={styles.typeButtonText}>Type</Text>
+                                            <Image source={require("../../../assets/images/NewUI/pen.png")} style={styles.buttonIcon} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.typeButton}>
+                                            <Text style={styles.typeButtonText}>Speak</Text>
+                                            <Image source={require("../../../assets/images/NewUI/pen.png")} style={styles.buttonIcon} />
+                                        </TouchableOpacity>
+                                    </View>
 
-                <TouchableOpacity
-                    style={[styles.nextButton, !currentAnswer.trim() && styles.disabledButton]}
-                    onPress={handleNext}
-                    disabled={!currentAnswer.trim()}
-                >
-                    <Text style={styles.nextButtonText}>{currentQuestion === questions.length - 1 ? "Complete" : "Next"}</Text>
-                </TouchableOpacity>
+                                    <View style={styles.controlButtonsRow}>
+                                        <TouchableOpacity
+                                            style={styles.eraseButton}
+                                            onPress={() => handleErase(index)}
+                                        >
+                                            <Text style={styles.typeButtonText}>Erase</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.typeButton,
+                                                !answers[index].trim() && styles.disabledButton
+                                            ]}
+                                            onPress={() => handleNext(index)}
+                                            disabled={!answers[index].trim()}
+                                        >
+                                            <View style={styles.nextButtonView}>
+                                                <Text style={styles.typeButtonText}>
+                                                    {index === questions.length - 1 ? "Complete" : "Next"}
+                                                </Text>
+                                                <Image source={require("../../../assets/images/NewUI/chev_black.png")} style={styles.buttonIcon} resizeMode="cover" />
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    ))}
+                </ScrollView>
             </View>
+
         </View>
     )
 }
@@ -93,90 +128,126 @@ export default function Step2_Questions() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
     },
     gradient: {
         ...StyleSheet.absoluteFillObject,
-        zIndex: 0,
     },
-    contentWrapper: {
-        zIndex: 2,
-        width: "100%",
+    containerWrapper: {
         flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 60,
+        paddingTop: screenRatio >= 2 ? 60 : 30,
     },
     header: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "center",
         alignItems: "center",
-        marginBottom: 40,
+        marginBottom: screenRatio >= 2 ? 40 : 20,
     },
-    backButton: {
-        padding: 10,
+    headerIcon: {
+        width: 20,
+        height: 20,
     },
-    backText: {
-        fontSize: 24,
+    title: {
+        fontSize: screenRatio >= 2 ? 28 : 26,
+        fontFamily: "Alberts",
         color: "#333",
+        marginRight: 8,
     },
-    progressText: {
-        fontSize: 16,
-        color: "#666",
+    conversationContainer: {
+        flex: 1,
+        paddingHorizontal: 24,
+        marginBottom: screenRatio >= 2 ? 60 : 50,
     },
-    questionContainer: {
-        backgroundColor: "#8B7355",
+    questionAnswerPair: {
+        marginBottom: screenRatio >= 2 ? 40 : 20,
+    },
+    questionBubble: {
+        backgroundColor: "#66621C",
         padding: 20,
-        borderRadius: 20,
-        marginBottom: 30,
+        borderRadius: 15,
+        borderBottomLeftRadius: 0,
+        marginBottom: 8,
         alignSelf: "flex-start",
+        maxWidth: "80%",
     },
     questionText: {
         color: "white",
-        fontSize: 16,
-        fontWeight: "500",
+        fontSize: screenRatio >= 2 ? 18 : 16,
+        fontFamily: "Judson",
+        lineHeight: 22,
     },
-    inputContainer: {
-        flex: 1,
-        backgroundColor: "#F5F5DC",
+    answerBubbleContainer: {
+        alignSelf: "flex-end",
+        maxWidth: "80%",
+    },
+    answerBubble: {
+        backgroundColor: "#FFFEDD",
         borderRadius: 15,
         padding: 20,
-        marginBottom: 20,
+        borderBottomRightRadius: 0,
+        marginBottom: 12,
     },
-    textInput: {
-        flex: 1,
-        fontSize: 16,
-        color: "#333",
-        textAlignVertical: "top",
+    answerInput: {
+        fontSize: screenRatio >= 2 ? 18 : 16,
+        fontFamily: "Judson",
+        color: "#000",
+        minHeight: 80,
     },
-    buttonContainer: {
+    actionSection: {
+        // alignItems: "center",
+    },
+    actionButtonsRow: {
         flexDirection: "row",
-        justifyContent: "space-around",
-        marginBottom: 30,
+        justifyContent: "flex-end",
+        gap: 12,
+        marginBottom: 8,
     },
-    actionButton: {
-        backgroundColor: "#D2B48C",
-        paddingVertical: 12,
+    typeButton: {
+        backgroundColor: "#FFDAB9",
+        paddingVertical: 11,
+        paddingHorizontal: 22,
+        borderRadius: 100,
+        flexDirection: "row",
+    },
+    typeButtonText: {
+        color: "#597184",
+        fontSize: screenRatio >= 2 ? 16 : 14,
+        fontFamily: "Alberts",
+    },
+    eraseButton: {
+        backgroundColor: "#FFDAB9",
+        paddingVertical: 11,
+        paddingHorizontal: 22,
+        borderRadius: 100,
+    },
+
+    controlButtonsRow: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        gap: 12,
+    },
+
+    nextButton: {
+        backgroundColor: "#FEA366",
+        paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 20,
     },
-    actionButtonText: {
-        color: "#8B4513",
-        fontSize: 14,
-        fontWeight: "500",
-    },
-    nextButton: {
-        backgroundColor: "#8B7355",
-        paddingVertical: 15,
-        borderRadius: 25,
+    nextButtonView: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
         alignItems: "center",
-        marginBottom: 30,
+    },
+    buttonIcon: {
+        width: 14,
+        height: 14,
+        marginLeft: 8,
+
     },
     disabledButton: {
         backgroundColor: "#CCC",
     },
     nextButtonText: {
-        color: "white",
         fontSize: 16,
-        fontWeight: "600",
+        fontFamily: "Alberts",
     },
 })
